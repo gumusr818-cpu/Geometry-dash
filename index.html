@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Geometry Dash - Mobile with Restart Button</title>
+  <title>Geometry Dash - Mobile</title>
   <style>
     * {
       box-sizing: border-box;
@@ -54,12 +54,12 @@
     }
     #restart-btn {
       left: 12px;
-      background: rgba(255, 0, 85, 0.85);
+      background: rgba(255, 0, 85, 0.9);
       color: #fff;
     }
     #fullscreen-btn {
       right: 12px;
-      background: rgba(0, 240, 255, 0.85);
+      background: rgba(0, 240, 255, 0.9);
       color: #000;
     }
   </style>
@@ -82,11 +82,11 @@ const restartBtn = document.getElementById('restart-btn');
 // Oyun Sabitleri
 const GROUND_Y = 360;
 const GRAVITY = 0.68;
-const JUMP_FORCE = -11; // Dengeli zıplama yüksekliği
-const FORWARD_SPEED = 6.5; // Karakterin sağa ilerleme hızı
+const JUMP_FORCE = -11; 
+const FORWARD_SPEED = 6.5; 
 
 let score = 0;
-let cameraX = 0; // Kamera Pozisyonu
+let cameraX = 0;
 
 // Oyuncu Nesnesi
 const player = {
@@ -113,44 +113,34 @@ const player = {
   },
 
   update() {
-    // Dümdüz Sağa İlerleme
     this.x += FORWARD_SPEED;
-
-    // Yerçekimi & Dikey Hareket
     this.vy += GRAVITY;
     this.y += this.vy;
 
-    // Zemine İniş Kontrolü
     if (this.y >= GROUND_Y - this.size) {
       this.y = GROUND_Y - this.size;
       this.vy = 0;
       this.isGrounded = true;
-      // Takla tamamlandığında dereceyi en yakın 90'a yuvarlayıp oturtur
       this.rotation = Math.round(this.rotation / 90) * 90;
     } else {
-      // Havadayken takla animasyonu
       this.rotation += 9;
     }
   },
 
   draw(camX) {
     ctx.save();
-    // Kameraya göre ekrandaki X pozisyonu
     const screenX = this.x - camX;
     
     ctx.translate(screenX + this.size / 2, this.y + this.size / 2);
     ctx.rotate((this.rotation * Math.PI) / 180);
 
-    // Kare Karakter Dış Çerçeve
     ctx.fillStyle = '#00f0ff';
     ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
     
-    // Kenarlık
     ctx.strokeStyle = '#000';
     ctx.lineWidth = 3;
     ctx.strokeRect(-this.size / 2, -this.size / 2, this.size, this.size);
     
-    // İç Kare Detayı
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(-8, -8, 16, 16);
 
@@ -163,11 +153,10 @@ let obstacles = [];
 let lastSpawnX = 600;
 
 function generateObstacles() {
-  // Karakterin ilerisindeki haritayı dinamik oluştur
   while (lastSpawnX < player.x + 900) {
     const types = ['spike', 'double_spike', 'block', 'block_spike'];
     const type = types[Math.floor(Math.random() * types.length)];
-    const distance = 280 + Math.random() * 180; // Engeller arası mesafe
+    const distance = 280 + Math.random() * 180;
     const spawnX = lastSpawnX + distance;
 
     if (type === 'spike') {
@@ -192,12 +181,10 @@ function updateObstacles() {
   for (let i = obstacles.length - 1; i >= 0; i--) {
     const obs = obstacles[i];
 
-    // Arkada kalan engelleri hafızadan sil
     if (obs.x + obs.width < cameraX - 100) {
       obstacles.splice(i, 1);
     }
 
-    // Çarpışma Kontrolü
     if (checkCollision(player, obs)) {
       restartGame();
     }
@@ -208,7 +195,6 @@ function drawObstacles(camX) {
   obstacles.forEach(obs => {
     const screenX = obs.x - camX;
     
-    // Yalnızca ekranda görünen engelleri çiz
     if (screenX > -100 && screenX < canvas.width + 100) {
       if (obs.type === 'spike') {
         ctx.fillStyle = '#ff0055';
@@ -233,7 +219,6 @@ function drawObstacles(camX) {
   });
 }
 
-// AABB Çarpışma Hesabı
 function checkCollision(p, o) {
   const pad = o.type === 'spike' ? 6 : 2;
   const pL = p.x + pad, pR = p.x + p.size - pad;
@@ -254,11 +239,9 @@ function restartGame() {
 }
 
 function drawEnvironment(camX) {
-  // Sonsuz Zemin Çizimi
   ctx.fillStyle = '#0a0518';
   ctx.fillRect(0, GROUND_Y, canvas.width, canvas.height - GROUND_Y);
   
-  // Zemin Çizgisi
   ctx.strokeStyle = '#00f0ff';
   ctx.lineWidth = 3;
   ctx.beginPath();
@@ -266,18 +249,15 @@ function drawEnvironment(camX) {
   ctx.lineTo(canvas.width, GROUND_Y);
   ctx.stroke();
 
-  // Skor / Mesafe
   score = Math.max(0, Math.floor(player.x / 10) - 10);
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 20px Arial';
   ctx.fillText(`Mesafe: ${score}m`, 160, 36);
 }
 
-// Ana Oyun Döngüsü
 function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Karakteri ekranın sol tarafından 150px uzaklıkta tutacak şekilde kamerayı takip ettir
   cameraX = player.x - 150;
 
   player.update();
@@ -290,14 +270,16 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
-// Dokunma ve Kontrol Olayları
+// Zıplama Kontrolü
 function handleJump(e) {
-  // Butonlara tıklandığında zıplamayı engelle
-  if (e.target === fsBtn || e.target === restartBtn) return;
+  // Eğer tıklanan yer butonlardan biriyse zıplama yapma
+  if (e.target.tagName === 'BUTTON' || e.target.classList.contains('btn')) {
+    return;
+  }
   
   player.jump();
   
-  if (e.cancelable && e.type !== 'click') {
+  if (e.cancelable && e.type === 'touchstart') {
     e.preventDefault();
   }
 }
@@ -310,15 +292,24 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-// Yeniden Doğ Butonu Mantığı
-restartBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
+// Yeniden Doğ Butonu (Mobil Dokunma ve Tıklama Desteği)
+function doRestart(e) {
+  if (e) {
+    e.stopPropagation();
+    if (e.cancelable) e.preventDefault();
+  }
   restartGame();
-});
+}
 
-// Tam Ekran Butonu Mantığı
-fsBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
+restartBtn.addEventListener('touchstart', doRestart, { passive: false });
+restartBtn.addEventListener('click', doRestart);
+
+// Tam Ekran Butonu
+function toggleFullscreen(e) {
+  if (e) {
+    e.stopPropagation();
+    if (e.cancelable) e.preventDefault();
+  }
   if (!document.fullscreenElement) {
     if (container.requestFullscreen) {
       container.requestFullscreen();
@@ -330,9 +321,12 @@ fsBtn.addEventListener('click', (e) => {
       document.exitFullscreen();
     }
   }
-});
+}
 
-// Oyunu Başlat
+fsBtn.addEventListener('touchstart', toggleFullscreen, { passive: false });
+fsBtn.addEventListener('click', toggleFullscreen);
+
+// Başlat
 restartGame();
 gameLoop();
 </script>
