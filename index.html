@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Geometry Dash - Camera Follow</title>
+  <title>Geometry Dash - Mobile with Restart Button</title>
   <style>
     * {
       box-sizing: border-box;
@@ -37,13 +37,11 @@
       display: block;
       background: linear-gradient(to bottom, #110826, #2a104e);
     }
-    #fullscreen-btn {
+    /* Üst Butonlar */
+    .btn {
       position: absolute;
       top: 12px;
-      right: 12px;
       padding: 10px 16px;
-      background: rgba(0, 240, 255, 0.85);
-      color: #000;
       border: none;
       border-radius: 6px;
       font-weight: bold;
@@ -51,16 +49,26 @@
       z-index: 100;
       cursor: pointer;
     }
-    #fullscreen-btn:active {
+    .btn:active {
       transform: scale(0.95);
-      background: #00f0ff;
+    }
+    #restart-btn {
+      left: 12px;
+      background: rgba(255, 0, 85, 0.85);
+      color: #fff;
+    }
+    #fullscreen-btn {
+      right: 12px;
+      background: rgba(0, 240, 255, 0.85);
+      color: #000;
     }
   </style>
 </head>
 <body>
 
 <div id="game-container">
-  <button id="fullscreen-btn">Tam Ekran</button>
+  <button id="restart-btn" class="btn">Yeniden Doğ</button>
+  <button id="fullscreen-btn" class="btn">Tam Ekran</button>
   <canvas id="gameCanvas" width="800" height="450"></canvas>
 </div>
 
@@ -69,6 +77,7 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const container = document.getElementById('game-container');
 const fsBtn = document.getElementById('fullscreen-btn');
+const restartBtn = document.getElementById('restart-btn');
 
 // Oyun Sabitleri
 const GROUND_Y = 360;
@@ -257,11 +266,11 @@ function drawEnvironment(camX) {
   ctx.lineTo(canvas.width, GROUND_Y);
   ctx.stroke();
 
-  // Skor
-  score = Math.floor(player.x / 10) - 10;
+  // Skor / Mesafe
+  score = Math.max(0, Math.floor(player.x / 10) - 10);
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 22px Arial';
-  ctx.fillText(`Mesafe: ${score}m`, 25, 40);
+  ctx.font = 'bold 20px Arial';
+  ctx.fillText(`Mesafe: ${score}m`, 160, 36);
 }
 
 // Ana Oyun Döngüsü
@@ -283,7 +292,8 @@ function gameLoop() {
 
 // Dokunma ve Kontrol Olayları
 function handleJump(e) {
-  if (e.target === fsBtn) return;
+  // Butonlara tıklandığında zıplamayı engelle
+  if (e.target === fsBtn || e.target === restartBtn) return;
   
   player.jump();
   
@@ -300,7 +310,13 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-// Tam Ekran Butonu
+// Yeniden Doğ Butonu Mantığı
+restartBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  restartGame();
+});
+
+// Tam Ekran Butonu Mantığı
 fsBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   if (!document.fullscreenElement) {
